@@ -4,10 +4,10 @@ import { Model } from 'mongoose';
 import { URLStore, URLStoreDocument } from './url.schema';
 import { ApiResponse, IGenericResponse } from 'src/shared/apiResponse';
 import { EncodeURLDto } from './dtos/url.dto';
-import { IURLData } from 'src/shared/typings';
+import { IURLData, IURLStatics } from 'src/shared/typings';
 import { URL } from 'url';
-import * as http from 'https';
 import * as dns from 'dns';
+
 @Injectable()
 export class UrlService {
   constructor(
@@ -19,7 +19,7 @@ export class UrlService {
     try {
       let shortCode: string;
       do {
-        shortCode = Math.random().toString(16).slice(0, 11);
+        shortCode = Math.random().toString(16).slice(2,13);
       } while (await this.urlStoreModel.findOne({ shortCode }));
       return ApiResponse.success('code generated', HttpStatus.OK, shortCode);
     } catch (error) {
@@ -31,7 +31,7 @@ export class UrlService {
     }
   }
 
-  async encodeURL(url: string): Promise<IGenericResponse<IURLData | unknown>> {
+  async encodeURL(url: string, createdBy: string): Promise<IGenericResponse<IURLData | unknown>> {
     try {
       const isVerifiedUrl = await UrlService.isWorkingUrl(url);
       if (!isVerifiedUrl.status)
@@ -43,18 +43,23 @@ export class UrlService {
       const urlExists = await this.urlStoreModel.findOne({ originalUrl: url });
       if (urlExists)
         return ApiResponse.fail(
-          'This URL is not in our system',
+          'This URL already in our system',
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
+
       const shortCodeResult = await this.getUrlStringUniqueCode();
       if (!shortCodeResult.status) return shortCodeResult;
+      let shortUrl = `${process.env.SHORT_BASE_URL + shortCodeResult.data}`;
+      
       await this.urlStoreModel.create({
         originalUrl: url,
         shortCode: shortCodeResult.data,
+        shortUrl,
+        createdBy
       });
       return ApiResponse.success('url encoded successfully', HttpStatus.OK, {
         originalUrl: url,
-        shortUrl: `${process.env.SHORT_BASE_URL + shortCodeResult.data}`,
+        shortUrl
       });
     } catch (error) {
       return ApiResponse.fail(
@@ -65,24 +70,52 @@ export class UrlService {
     }
   }
 
-  async decodeURL(shortCode: string): Promise<IGenericResponse<IURLData | unknown>>{
+  async decodeURL(shortUrl: string): Promise<IGenericResponse<IURLData | unknown>>{
     try{
-        const shortCodeDoc = await this.urlStoreModel.findOne({shortCode});
-        if(!shortCodeDoc) return ApiResponse.fail("This short code is not in our record", HttpStatus.NOT_FOUND);
+        const shortUrlDoc = await this.urlStoreModel.findOne({shortUrl});
+        if(!shortUrlDoc) return ApiResponse.fail("This short code is not in our record", HttpStatus.NOT_FOUND);
         
-        const isDNSUp = await UrlService.isWorkingUrl(shortCodeDoc.originalUrl);
+        const isDNSUp = await UrlService.isWorkingUrl(shortUrlDoc.originalUrl);
+        let originalUrlStatus: "down" | "up" = "up";
         if(!isDNSUp){
-            shortCodeDoc.numberOfFailedRedirects += 1;
+            originalUrlStatus = "down";
+            shortUrlDoc.urlServerDownAtRedirects += 1;
+
         }
-        shortCodeDoc.numberOfVisits += 1;
-        await shortCodeDoc.save();
-        return ApiResponse.success("url code decoded successfully", HttpStatus.OK, {originalUrl: shortCodeDoc.originalUrl, shortUrl: `${process.env.SHORT_BASE_URL + shortCode}`});
+        shortUrlDoc.numberOfVisits += 1;
+        await shortUrlDoc.save();
+        return ApiResponse.success<IURLData>("url code decoded successfully", HttpStatus.OK, {originalUrl: shortUrlDoc.originalUrl, shortUrl: `${process.env.SHORT_BASE_URL + shortUrl}`, originalUrlStatus});
     }catch(error){
         return ApiResponse.fail(error.message, HttpStatus.INTERNAL_SERVER_ERROR, error);
     }
-
-
 }
+
+
+async getURLStatistics(shortCode: string): Promise<IGenericResponse<IURLStatics | unknown>>{
+    try{
+        
+        const shortUrlDoc = await this.urlStoreModel.findOne({shortCode});
+        if(!shortUrlDoc) return ApiResponse.fail(`This url path ${shortCode} is not in our record`, HttpStatus.NOT_FOUND);
+        
+        const isDNSUp = await UrlService.isWorkingUrl(shortUrlDoc.originalUrl);
+        let originalUrlStatus: "down" | "up" = "up";
+        if(!isDNSUp){
+            originalUrlStatus = "down";
+            shortUrlDoc.urlServerDownAtRedirects += 1;
+        }
+        await shortUrlDoc.save();
+        const {originalUrl, shortUrl,registeredAt, createdBy, numberOfVisits, numberOfFailedRedirects, urlServerDownAtRedirects} = shortUrlDoc;
+        const urlStatistics: IURLStatics = {
+            originalUrl, shortUrl, shortCode,registeredAt, createdBy, numberOfVisits, numberOfFailedRedirects, urlServerDownAtRedirects,
+            originalUrlStatus
+        }
+        return ApiResponse.success<IURLStatics>("url statistics got successfully", HttpStatus.OK, urlStatistics);
+    }catch(error){
+        return ApiResponse.fail(error.message, HttpStatus.INTERNAL_SERVER_ERROR, error);
+    }
+}
+
+
 
   static async isWorkingUrl(url: string): Promise<IGenericResponse<boolean>> {
     try {

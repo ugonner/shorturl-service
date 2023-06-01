@@ -15,19 +15,43 @@ export class URLStore{
         type: String,
         unique: true
     })
+    shortUrl: string;
+
+    @Prop({
+        type: String,
+        unique: true
+    })
     shortCode: string;
 
     @Prop({
-        type: mongoose.Schema.Types.Number,
-        default: 0
+        type: String,
+        unique: true
     })
-    numberOfVisits: 0
+    createdBy: string;
+
+    @Prop({
+        type: Date,
+        default: Date.now()
+    })
+    registeredAt: Date;
 
     @Prop({
         type: mongoose.Schema.Types.Number,
         default: 0
     })
-    numberOfFailedRedirects: 0
+    numberOfVisits: number;
+
+    @Prop({
+        type: mongoose.Schema.Types.Number,
+        default: 0
+    })
+    numberOfFailedRedirects: number;
+
+    @Prop({
+        type: mongoose.Schema.Types.Number,
+        default: 0
+    })
+    urlServerDownAtRedirects: number;
 }
 
 export const URLStoreSchema = SchemaFactory.createForClass(URLStore);
