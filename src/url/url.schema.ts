@@ -15,7 +15,7 @@ export class URLStore{
         type: String,
         unique: true
     })
-    shortUrl: string;
+    shortCode: string;
 
     @Prop({
         type: mongoose.Schema.Types.Number,

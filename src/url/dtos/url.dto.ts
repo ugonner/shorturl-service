@@ -1,7 +1,6 @@
 import {IsUrl, IsString } from "class-validator";
 
-export class URLDto{
+export class EncodeURLDto{
     @IsUrl()
-    @IsString()
     url: string;
 }
