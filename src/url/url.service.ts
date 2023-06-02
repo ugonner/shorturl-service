@@ -2,9 +2,9 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { URLStore, URLStoreDocument } from './url.schema';
-import { ApiResponse, IGenericResponse } from 'src/shared/apiResponse';
+import { ApiResponse, IGenericResponse } from '../shared/apiResponse';
 import { EncodeURLDto } from './dtos/url.dto';
-import { IURLData, IURLStatics } from 'src/shared/typings';
+import { IURLData, IURLStatics } from '../shared/typings';
 import { URL } from 'url';
 import * as dns from 'dns';
 
@@ -49,7 +49,7 @@ export class UrlService {
 
       const shortCodeResult = await this.getUrlStringUniqueCode();
       if (!shortCodeResult.status) return shortCodeResult;
-      let shortUrl = `${process.env.SHORT_BASE_URL + shortCodeResult.data}`;
+      let shortUrl = `${process.env.SHORT_BASE_URL  +":"+ process.env.PORT +"/"+ shortCodeResult.data}`;
       
       await this.urlStoreModel.create({
         originalUrl: url,
@@ -57,9 +57,10 @@ export class UrlService {
         shortUrl,
         createdBy
       });
-      return ApiResponse.success('url encoded successfully', HttpStatus.OK, {
+      return ApiResponse.success<IURLData>('url encoded successfully', HttpStatus.OK, {
         originalUrl: url,
-        shortUrl
+        shortUrl,
+        shortCode: shortCodeResult.data
       });
     } catch (error) {
       return ApiResponse.fail(
@@ -70,9 +71,9 @@ export class UrlService {
     }
   }
 
-  async decodeURL(shortUrl: string): Promise<IGenericResponse<IURLData | unknown>>{
+  async decodeURL(shortCode: string): Promise<IGenericResponse<IURLData | unknown>>{
     try{
-        const shortUrlDoc = await this.urlStoreModel.findOne({shortUrl});
+        const shortUrlDoc = await this.urlStoreModel.findOne({shortCode});
         if(!shortUrlDoc) return ApiResponse.fail("This short code is not in our record", HttpStatus.NOT_FOUND);
         
         const isDNSUp = await UrlService.isWorkingUrl(shortUrlDoc.originalUrl);
@@ -84,7 +85,7 @@ export class UrlService {
         }
         shortUrlDoc.numberOfVisits += 1;
         await shortUrlDoc.save();
-        return ApiResponse.success<IURLData>("url code decoded successfully", HttpStatus.OK, {originalUrl: shortUrlDoc.originalUrl, shortUrl: `${process.env.SHORT_BASE_URL + shortUrl}`, originalUrlStatus});
+        return ApiResponse.success<IURLData>("url code decoded successfully", HttpStatus.OK, {originalUrl: shortUrlDoc.originalUrl, shortUrl: shortUrlDoc.shortUrl, shortCode: shortUrlDoc.shortCode, originalUrlStatus});
     }catch(error){
         return ApiResponse.fail(error.message, HttpStatus.INTERNAL_SERVER_ERROR, error);
     }

@@ -1,8 +1,8 @@
 import {Post,Get, Body, Param, Controller, Req } from '@nestjs/common';
 import { UrlService } from './url.service';
 import { DecodeURLDto, EncodeURLDto} from './dtos/url.dto';
-import { IGenericResponse } from 'src/shared/apiResponse';
-import { IURLData } from 'src/shared/typings';
+import { IGenericResponse } from '../shared/apiResponse';
+import { IURLData } from '../shared/typings';
 import { Request } from 'express';
 @Controller()
 export class UrlController {
