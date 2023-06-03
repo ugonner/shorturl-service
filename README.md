@@ -5,6 +5,21 @@ This is a short-url service which has endpoints to encode a given url into a sho
 - shortUrl's path (shortCode) is generated to be unique;
 - Validation also rejects non-working url domains using the dns lookup module.
 
+# VCS Repo
+Github - all dev time code are pushed to development branch before merging to main
+
+# To install dependencies:
+''' bash
+npm install
+
+# To Run
+''' bash
+npm run start
+
+# To run Tests:
+# Tests include positive and negative test cases
+''' bash
+npm run test
 
 Endpoints
 This API has a general format / interface for all endpoints 
