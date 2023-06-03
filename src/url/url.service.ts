@@ -59,7 +59,7 @@ export class UrlService {
         shortUrl,
         createdBy
       });
-      return ApiResponse.success<IURLData>('url encoded successfully', HttpStatus.OK, {
+      return ApiResponse.success<IURLData>('url encoded successfully', HttpStatus.CREATED, {
         originalUrl: url,
         shortUrl,
         shortCode: shortCodeResult.data
