@@ -2,7 +2,7 @@ API Documentation
 Introduction
 This is a short-url service which has endpoints to encode a given url into a shorter url, endpoint to decode / retrieve the original url of a given short-url's path (referred to as shortCode in this app) and endpoint to get statistical data about a given url_path (shortCode).
 
-- shortUrl's path (shortCode) is generated to be unique;
+- shortUrl's path (shortCode) is generated to be unique and with high combination value to increase scalability;
 - Validation also rejects non-working url domains using the dns lookup module.
 
 # VCS Repo

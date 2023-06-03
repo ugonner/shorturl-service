@@ -43,7 +43,7 @@ describe('UrlService', () => {
 
   describe("positive tests for create short url", () => {
     it("should generate a unique string", async () => {
-      const code = await service.getUrlStringUniqueCode();
+      const code = await service.getUrlStringUniqueCode(10);
       expect(code).toHaveProperty("data");
       expect(code.data).toMatch(/[a-zA-Z0-9]/g)
     })

@@ -15,11 +15,13 @@ export class UrlService {
     private urlStoreModel: Model<URLStoreDocument>,
   ) {}
 
-  async getUrlStringUniqueCode(): Promise<IGenericResponse<string>> {
+  async getUrlStringUniqueCode(noOfChars: number): Promise<IGenericResponse<string>> {
     try {
       let shortCode: string;
       do {
-        shortCode = Math.random().toString(16).slice(2,13);
+        for(let i = 1; i < noOfChars; i++){
+          shortCode += Math.random().toString(16)[i+1];
+        }
       } while (await this.urlStoreModel.findOne({ shortCode }));
       return ApiResponse.success('code generated', HttpStatus.OK, shortCode);
     } catch (error) {
@@ -47,7 +49,7 @@ export class UrlService {
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
 
-      const shortCodeResult = await this.getUrlStringUniqueCode();
+      const shortCodeResult = await this.getUrlStringUniqueCode(10);
       if (!shortCodeResult.status) return shortCodeResult;
       let shortUrl = `${process.env.SHORT_BASE_URL  +":"+ process.env.PORT +"/"+ shortCodeResult.data}`;
       
