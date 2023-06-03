@@ -170,6 +170,17 @@ describe('UrlController', () => {
       const responseBody = response.body;
       expect(response.statusCode).toBe(200);
       expect(responseBody).toHaveProperty("data");
+      expect(responseBody.data).toEqual(expect.objectContaining<IURLStatics>({
+        originalUrl: expect.any(String),
+        shortUrl: expect.any(String),
+        shortCode: expect.any(String),
+        createdBy: expect.any(String),
+        registeredAt: expect.any(String),
+        originalUrlStatus: expect.any(String),
+        numberOfVisits: expect.any(Number),
+        numberOfFailedRedirects: expect.any(Number),
+        urlServerDownAtRedirects: expect.any(Number),
+      }))
       expect(responseBody.data).toHaveProperty("originalUrl");
       expect((responseBody.data as IURLData).originalUrl).toMatch(validUrl2.url)
     })

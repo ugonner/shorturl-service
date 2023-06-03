@@ -8,8 +8,6 @@ export interface IURLData{
 }
 
 export interface IURLStatics extends IURLData{
-    shortCode: string;
-    createdAt?: string;
     numberOfVisits: number;
     numberOfFailedRedirects: number;
     urlServerDownAtRedirects: number;
