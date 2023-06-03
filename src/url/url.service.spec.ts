@@ -14,7 +14,6 @@ describe('UrlService', () => {
   beforeAll(async () => {
     mongod = await MongoMemoryServer.create();
     const databaseUri = mongod.getUri();
-    console.log("data", databaseUri)
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({isGlobal: true}),

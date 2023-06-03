@@ -24,8 +24,7 @@ export class URLStore{
     shortCode: string;
 
     @Prop({
-        type: String,
-        unique: true
+        type: String
     })
     createdBy: string;
 
