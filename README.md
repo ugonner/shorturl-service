@@ -1,73 +1,115 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+API Documentation
+Introduction
+This is a short-url service which has endpoints to encode a given url into a shorter url, endpoint to decode / retrieve the original url of a given short-url's path (referred to as shortCode in this app) and endpoint to get statistical data about a given url_path (shortCode).
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+- shortUrl's path (shortCode) is generated to be unique;
+- Validation also rejects non-working url domains using the dns lookup module.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
+Endpoints
+This API has a general format / interface for all endpoints 
+ie:
+{
+  data: ResultType,
+  status: boolean // successsful processes is true
+  statusCode: number // response http status code
+  message: string
+  error: ErrorResultType // if process returns error
+}
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Installation
+POST /encode
+Create a short-url for a given url.
+- urls with invalid / non-working domain servers are also   rejected.
 
-```bash
-$ npm install
-```
+Request Body:
+{
+  url: "http://google.com"
+}
 
-## Running the app
+url (required): url to be encoded into shorter url.
 
-```bash
-# development
-$ npm run start
+Response:
 
-# watch mode
-$ npm run start:dev
+Status Code: 201 (Created)
+Response Body:
+json
+{
+    "message": "url encoded successfully",
+    "status": true,
+    "statusCode": 200,
+    "data": {
+        "originalUrl": "http://bbc.co.uk",
+        "shortUrl": "http://localhost:3003/21e50f25520",
+        "shortCode": "21e50f25520"
+    }
+}
 
-# production mode
-$ npm run start:prod
-```
+POST /decode
+Decode a given short_url's path (shortCode).
 
-## Test
+Request Body:
 
-```bash
-# unit tests
-$ npm run test
+json
+{
+  "shortCode": "21e50f25520",
+}
 
-# e2e tests
-$ npm run test:e2e
 
-# test coverage
-$ npm run test:cov
-```
+Response:
 
-## Support
+{
+    "message": "url code decoded successfully",
+    "status": true,
+    "statusCode": 200,
+    "data": {
+        "originalUrl": "http://bbc.co.uk",
+        "shortUrl": "http://localhost:3003/21e50f25520",
+        "shortCode": "21e50f25520",
+        "originalUrlStatus": "up"
+    }
+}
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
 
-## Stay in touch
+GET /statistics/{url_path}
+Gets the statistical data of a given url_path (shortCode);
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Request Paramenter
+url_path {required} - the shortCode generated for the shortUrl
 
-## License
+Response:
+StatusCode: 200 (OK)
 
-Nest is [MIT licensed](LICENSE).
+{
+    "message": "url statistics got successfully",
+    "status": true,
+    "statusCode": 200,
+    "data": {
+        "originalUrl": "http://bbc.co.uk",
+        "shortUrl": "http://localhost:3003/21e50f25520",
+        "shortCode": "21e50f25520",
+        "registeredAt": "2023-06-03T14:38:25.780Z",
+        "createdBy": "::1",
+        "numberOfVisits": 1,
+        "numberOfFailedRedirects": 0,
+        "urlServerDownAtRedirects": 0,
+        "originalUrlStatus": "up"
+    }
+}
+
+NB:
+
+        "urlServerDownAtRedirects": 0, // increments when dns lookup fails after a url must have been successfully registered earlier
+        
+        "originalUrlStatus": Value is "up" or "down" - also determined by the CURRENT, AT THE REQUEST INSTANT dns lookup of the originalUrl 
+    
+        "createdBy" - for this demo, tracks the user that registered the url; by the request.ip of the /encode endpoint
+
+Error Handling
+  Errors are identified in the statusCodes and the value of the status field with false value. The message field is also populated with the error message. The error field may also be poppulated with an object of more details.
+
+  
+
+
+
+
