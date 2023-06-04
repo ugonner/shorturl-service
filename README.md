@@ -11,23 +11,23 @@ This is a short-url service which has endpoints to encode a given url into a sho
 Github - all dev time code are pushed to development branch before merging to main
 
 # To install dependencies:
-''' bash
+``` bash
 npm install
-
+```
 # To Run
-''' bash
+``` bash
 npm run start
-
+```
 # To run Tests:
  Tests include positive and negative test cases
-''' bash
+``` bash
 npm run test
 ```
 
 # Endpoints
 This API has a general format / interface for all endpoints 
 ie:
-``` javascript
+``` json
 {
   data: ResultType,
   status: boolean // successsful processes is true
@@ -42,7 +42,7 @@ __POST /encode__
 - urls with invalid / non-working domain servers are also   rejected.
 
 Request Body:
-``` javascript
+``` json
 {
   url: "http://google.com"
 }
