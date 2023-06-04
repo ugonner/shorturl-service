@@ -1,29 +1,33 @@
-API Documentation
-Introduction
+# API Documentation
+# Introduction
 This is a short-url service which has endpoints to encode a given url into a shorter url, endpoint to decode / retrieve the original url of a given short-url's path (referred to as shortCode in this app) and endpoint to get statistical data about a given url_path (shortCode).
 
+'''
 - shortUrl's path (shortCode) is generated with algorithm to be unique and with high combination value to increase scalability;
+'''
 - Validation also rejects non-working url domains using the dns lookup module.
 
 # VCS Repo
 Github - all dev time code are pushed to development branch before merging to main
 
 # To install dependencies:
-''' bash
+``` bash
 npm install
-
+```
 # To Run
-''' bash
+``` bash
 npm run start
-
+```
 # To run Tests:
-# Tests include positive and negative test cases
-''' bash
+ Tests include positive and negative test cases
+``` bash
 npm run test
+```
 
-Endpoints
+# Endpoints
 This API has a general format / interface for all endpoints 
 ie:
+``` json
 {
   data: ResultType,
   status: boolean // successsful processes is true
@@ -31,24 +35,27 @@ ie:
   message: string
   error: ErrorResultType // if process returns error
 }
+```
 
-
-POST /encode
-Create a short-url for a given url.
+__POST /encode__
+- Create a short-url for a given url.
 - urls with invalid / non-working domain servers are also   rejected.
 
 Request Body:
+``` json
 {
   url: "http://google.com"
 }
-
+```
 url (required): url to be encoded into shorter url.
 
-Response:
+__Response:__
 
-Status Code: 201 (Created)
-Response Body:
-json
+- 
+  Status Code: 201 (Created)
+  Response Body:
+
+``` json
 {
     "message": "url encoded successfully",
     "status": true,
@@ -59,20 +66,22 @@ json
         "shortCode": "21e50f25520"
     }
 }
+```
 
-POST /decode
-Decode a given short_url's path (shortCode).
+__POST /decode__
+-
+  Decode a given short_url's path (shortCode).
 
-Request Body:
+- Request Body:
 
-json
+``` json
 {
   "shortCode": "21e50f25520",
 }
+```
 
-
-Response:
-
+- Response:
+``` json
 {
     "message": "url code decoded successfully",
     "status": true,
@@ -84,17 +93,17 @@ Response:
         "originalUrlStatus": "up"
     }
 }
+```
 
+__GET /statistics/{url_path}__
+- Gets the statistical data of a given url_path (shortCode);
 
-GET /statistics/{url_path}
-Gets the statistical data of a given url_path (shortCode);
-
-Request Paramenter
-url_path {required} - the shortCode generated for the shortUrl
+_Request Paramenter_
+- url_path {required} - the shortCode generated for the shortUrl
 
 Response:
-StatusCode: 200 (OK)
-
+- StatusCode: 200 (OK)
+``` json
 {
     "message": "url statistics got successfully",
     "status": true,
@@ -111,8 +120,8 @@ StatusCode: 200 (OK)
         "originalUrlStatus": "up"
     }
 }
-
-NB:
+```
+- NB:
 
         "urlServerDownAtRedirects": 0, // increments when dns lookup fails after a url must have been successfully registered earlier
         
@@ -120,7 +129,7 @@ NB:
     
         "createdBy" - for this demo, tracks the user that registered the url; by the request.ip of the /encode endpoint
 
-Error Handling
+# Error Handling
   Errors are identified in the statusCodes and the value of the status field with false value. The message field is also populated with the error message. The error field may also be poppulated with an object of more details.
 
   
