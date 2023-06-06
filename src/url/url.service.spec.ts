@@ -4,7 +4,7 @@ import {MongoMemoryServer} from 'mongodb-memory-server';
 import { MongooseModule } from '@nestjs/mongoose';
 import { URLStore, URLStoreSchema } from './url.schema';
 import mongoose from 'mongoose';
-import { IURLData } from 'src/shared/typings';
+import { IURLData, IURLStatics } from 'src/shared/typings';
 import { ConfigModule } from '@nestjs/config';
 
 describe('UrlService', () => {
@@ -101,5 +101,14 @@ describe('UrlService', () => {
     })
   });
 
+  describe("utility functions", () => {
+    it("should update a doc", async () => {
+      const updateValue = 1;
+      const result = await service.updateUrlData<number>(shortCode, "numberOfFailedRedirects", updateValue, "_inc");
+      expect(result.status).toBeTruthy();
+      expect(result.data).toBeTruthy();
+      expect((result.data)).toBeTruthy()
+    })
+  })
 
 });

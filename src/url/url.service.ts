@@ -17,10 +17,10 @@ export class UrlService {
 
   async getUrlStringUniqueCode(noOfChars: number): Promise<IGenericResponse<string>> {
     try {
-      let shortCode: string;
+      let shortCode: string = "";
       do {
         for(let i = 1; i < noOfChars; i++){
-          shortCode += Math.random().toString(16)[i+1];
+          shortCode += Math.random().toString(16)[i+1] ?? "";
         }
       } while (await this.urlStoreModel.findOne({ shortCode }));
       return ApiResponse.success('code generated', HttpStatus.OK, shortCode);
@@ -139,6 +139,17 @@ async getURLStatistics(shortCode: string): Promise<IGenericResponse<IURLStatics 
         HttpStatus.INTERNAL_SERVER_ERROR,
         error,
       ); // Resolve with false if the URL is invalid
+    }
+  }
+
+  async updateUrlData<ValueType>(shortCode: string, property: string, value: ValueType, updateType: "_inc" | "_dec" | "_overwrite"): Promise<IGenericResponse<boolean>>{
+    try{
+      const query = updateType === "_inc" ? {"$inc": [{[property]: value}]} : {[property]: value};
+      const updatedDoc = await this.urlStoreModel.findOneAndUpdate({shortCode}, query, {new: true} );
+      if(!updatedDoc) return ApiResponse.fail("data not found", HttpStatus.NOT_FOUND)
+      return ApiResponse.success("updated", HttpStatus.OK, true)
+    }catch(error){
+      return ApiResponse.fail(error.message, HttpStatus.INTERNAL_SERVER_ERROR, error)
     }
   }
 }

@@ -9,9 +9,9 @@ import { URLStore, URLStoreSchema } from './url.schema';
 import mongoose from 'mongoose';
 import {ValidationPipe} from '@nestjs/common'
 import * as request from 'supertest';
-import { IGenericResponse } from '../shared/apiResponse';
 import { IURLData, IURLStatics } from '../shared/typings';
 import { ResponseInterceptor } from '../shared/interceptors/response.interceptor';
+import { response } from 'express';
 describe('UrlController', () => {
   let controller: UrlController;
   let app: NestApplication;
@@ -186,6 +186,12 @@ describe('UrlController', () => {
     })
   });
 
+  describe("redirect to original url", () => {
+    it("should redirect to original url", async () => {
+      const response = await request(app.getHttpServer()).get(`/${shortCodePayload.shortCode}`);
+      expect(response).toBeDefined(); 
+    })
+  })
   })
 
 
