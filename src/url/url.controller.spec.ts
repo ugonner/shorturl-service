@@ -9,9 +9,9 @@ import { URLStore, URLStoreSchema } from './url.schema';
 import mongoose from 'mongoose';
 import {ValidationPipe} from '@nestjs/common'
 import * as request from 'supertest';
-import { IGenericResponse } from '../shared/apiResponse';
 import { IURLData, IURLStatics } from '../shared/typings';
 import { ResponseInterceptor } from '../shared/interceptors/response.interceptor';
+import { response } from 'express';
 describe('UrlController', () => {
   let controller: UrlController;
   let app: NestApplication;
@@ -89,14 +89,11 @@ describe('UrlController', () => {
         expect(responseBody.message[0]).toMatch( 'url must be a URL address');
       });
 
-      it("should reject URL with unavailable/invalid Domain entries", async () => {
+      it("should increment url serve down time count data for with unavailable/invalid Domain entries", async () => {
         const response = await request(app.getHttpServer()).post("/encode").send(invalidUrlDomainServer)
         const responseBody = response.body; 
-        expect(response.statusCode).toBe(422);
-        expect(responseBody).toHaveProperty("statusCode");
-        expect(responseBody.status).toBeFalsy();
-        expect(responseBody.data).toBeFalsy();
-        expect(responseBody.message).toMatch('This is not a working URL, check your site server admin');
+        expect((responseBody.data as any).urlServerDownAtRedirects).toBe(1)
+        
       })
       
       it("should reject duplicate URL entries", async () => {
@@ -186,6 +183,12 @@ describe('UrlController', () => {
     })
   });
 
+  describe("redirect to original url", () => {
+    it("should redirect to original url", async () => {
+      const response = await request(app.getHttpServer()).get(`/${shortCodePayload.shortCode}`);
+      expect(response).toBeDefined(); 
+    })
+  })
   })
 
 

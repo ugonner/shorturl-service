@@ -17,10 +17,10 @@ export class UrlService {
 
   async getUrlStringUniqueCode(noOfChars: number): Promise<IGenericResponse<string>> {
     try {
-      let shortCode: string;
+      let shortCode: string = "";
       do {
         for(let i = 1; i < noOfChars; i++){
-          shortCode += Math.random().toString(16)[i+1];
+          shortCode += Math.random().toString(16)[i+1] ?? "";
         }
       } while (await this.urlStoreModel.findOne({ shortCode }));
       return ApiResponse.success('code generated', HttpStatus.OK, shortCode);
@@ -36,11 +36,10 @@ export class UrlService {
   async encodeURL(url: string, createdBy: string): Promise<IGenericResponse<IURLData | unknown>> {
     try {
       const isVerifiedUrl = await UrlService.isWorkingUrl(url);
-      if (!isVerifiedUrl.status)
-        return ApiResponse.fail(
-          'This is not a working URL, check your site server admin',
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
+      let urlServerDowCount = 0;
+      if (!isVerifiedUrl.status){
+          urlServerDowCount += 1;
+      }
 
       const urlExists = await this.urlStoreModel.findOne({ originalUrl: url });
       if (urlExists)
@@ -57,13 +56,15 @@ export class UrlService {
         originalUrl: url,
         shortCode: shortCodeResult.data,
         shortUrl,
-        createdBy
+        createdBy,
+        urlServerDownAtRedirects: urlServerDowCount
       });
       return ApiResponse.success<IURLData>('url encoded successfully', HttpStatus.CREATED, {
         originalUrl: url,
         shortUrl,
-        shortCode: shortCodeResult.data
-      });
+        shortCode: shortCodeResult.data,
+        urlServerDownAtRedirects: urlServerDowCount
+      })
     } catch (error) {
       return ApiResponse.fail(
         error.message,
@@ -139,6 +140,17 @@ async getURLStatistics(shortCode: string): Promise<IGenericResponse<IURLStatics 
         HttpStatus.INTERNAL_SERVER_ERROR,
         error,
       ); // Resolve with false if the URL is invalid
+    }
+  }
+
+  async updateUrlData<ValueType>(shortCode: string, property: string, value: ValueType, updateType: "_inc" | "_dec" | "_overwrite"): Promise<IGenericResponse<boolean>>{
+    try{
+      const query = updateType === "_inc" ? {"$inc": [{[property]: value}]} : {[property]: value};
+      const updatedDoc = await this.urlStoreModel.findOneAndUpdate({shortCode}, query, {new: true} );
+      if(!updatedDoc) return ApiResponse.fail("data not found", HttpStatus.NOT_FOUND)
+      return ApiResponse.success("updated", HttpStatus.OK, true)
+    }catch(error){
+      return ApiResponse.fail(error.message, HttpStatus.INTERNAL_SERVER_ERROR, error)
     }
   }
 }

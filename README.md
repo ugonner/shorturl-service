@@ -5,7 +5,6 @@ This is a short-url service which has endpoints to encode a given url into a sho
 '''
 - shortUrl's path (shortCode) is generated with algorithm to be unique and with high combination value to increase scalability;
 '''
-- Validation also rejects non-working url domains using the dns lookup module.
 
 # VCS Repo
 Github - all dev time code are pushed to development branch before merging to main

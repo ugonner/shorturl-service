@@ -4,7 +4,8 @@ export interface IURLData{
     shortCode: string;
     createdBy?: string;
     registeredAt?: Date;
-    originalUrlStatus?: "down" | "up";
+    originalUrlStatus?: "down" | "up",
+    urlServerDownAtRedirects?: number
 }
 
 export interface IURLStatics extends IURLData{

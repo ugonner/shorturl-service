@@ -4,7 +4,7 @@ import {MongoMemoryServer} from 'mongodb-memory-server';
 import { MongooseModule } from '@nestjs/mongoose';
 import { URLStore, URLStoreSchema } from './url.schema';
 import mongoose from 'mongoose';
-import { IURLData } from 'src/shared/typings';
+import { IURLData, IURLStatics } from 'src/shared/typings';
 import { ConfigModule } from '@nestjs/config';
 
 describe('UrlService', () => {
@@ -58,14 +58,10 @@ describe('UrlService', () => {
   })
 
   describe("negative tests for create short url", () => {
-    it("should reject INVALID URL entries", async () => {
+    it("should increment urlSever down time count for bad dns entries", async () => {
       const result = await service.encodeURL("http://bonaventureumeokwonna.com", "bon");
-      expect(result).toHaveProperty("error");
-      expect(result).toHaveProperty("status");
-      expect(result.status).toBeFalsy();
-      expect(result.data).toBeNull();
-      expect(result.message).toMatch('This is not a working URL, check your site server admin');
-
+      expect((result.data as any).urlServerDownAtRedirects).toBe(1)
+      
     })
     
     it("should reject duplicate URL entries", async () => {
@@ -101,5 +97,14 @@ describe('UrlService', () => {
     })
   });
 
+  describe("utility functions", () => {
+    it("should update a doc", async () => {
+      const updateValue = 1;
+      const result = await service.updateUrlData<number>(shortCode, "numberOfFailedRedirects", updateValue, "_inc");
+      expect(result.status).toBeTruthy();
+      expect(result.data).toBeTruthy();
+      expect((result.data)).toBeTruthy()
+    })
+  })
 
 });
