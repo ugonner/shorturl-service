@@ -89,14 +89,11 @@ describe('UrlController', () => {
         expect(responseBody.message[0]).toMatch( 'url must be a URL address');
       });
 
-      it("should reject URL with unavailable/invalid Domain entries", async () => {
+      it("should increment url serve down time count data for with unavailable/invalid Domain entries", async () => {
         const response = await request(app.getHttpServer()).post("/encode").send(invalidUrlDomainServer)
         const responseBody = response.body; 
-        expect(response.statusCode).toBe(422);
-        expect(responseBody).toHaveProperty("statusCode");
-        expect(responseBody.status).toBeFalsy();
-        expect(responseBody.data).toBeFalsy();
-        expect(responseBody.message).toMatch('This is not a working URL, check your site server admin');
+        expect((responseBody.data as any).urlServerDownAtRedirects).toBe(1)
+        
       })
       
       it("should reject duplicate URL entries", async () => {

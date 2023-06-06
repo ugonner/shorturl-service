@@ -58,14 +58,10 @@ describe('UrlService', () => {
   })
 
   describe("negative tests for create short url", () => {
-    it("should reject INVALID URL entries", async () => {
+    it("should increment urlSever down time count for bad dns entries", async () => {
       const result = await service.encodeURL("http://bonaventureumeokwonna.com", "bon");
-      expect(result).toHaveProperty("error");
-      expect(result).toHaveProperty("status");
-      expect(result.status).toBeFalsy();
-      expect(result.data).toBeNull();
-      expect(result.message).toMatch('This is not a working URL, check your site server admin');
-
+      expect((result.data as any).urlServerDownAtRedirects).toBe(1)
+      
     })
     
     it("should reject duplicate URL entries", async () => {

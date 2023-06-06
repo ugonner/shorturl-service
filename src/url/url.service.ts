@@ -36,11 +36,10 @@ export class UrlService {
   async encodeURL(url: string, createdBy: string): Promise<IGenericResponse<IURLData | unknown>> {
     try {
       const isVerifiedUrl = await UrlService.isWorkingUrl(url);
-      if (!isVerifiedUrl.status)
-        return ApiResponse.fail(
-          'This is not a working URL, check your site server admin',
-          HttpStatus.UNPROCESSABLE_ENTITY,
-        );
+      let urlServerDowCount = 0;
+      if (!isVerifiedUrl.status){
+          urlServerDowCount += 1;
+      }
 
       const urlExists = await this.urlStoreModel.findOne({ originalUrl: url });
       if (urlExists)
@@ -57,13 +56,15 @@ export class UrlService {
         originalUrl: url,
         shortCode: shortCodeResult.data,
         shortUrl,
-        createdBy
+        createdBy,
+        urlServerDownAtRedirects: urlServerDowCount
       });
       return ApiResponse.success<IURLData>('url encoded successfully', HttpStatus.CREATED, {
         originalUrl: url,
         shortUrl,
-        shortCode: shortCodeResult.data
-      });
+        shortCode: shortCodeResult.data,
+        urlServerDownAtRedirects: urlServerDowCount
+      })
     } catch (error) {
       return ApiResponse.fail(
         error.message,
